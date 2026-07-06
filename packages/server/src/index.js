@@ -19,7 +19,8 @@ const RoomStore          = require('./state/RoomStore');
 const { createPlayer }   = require('./state/PlayerFactory');
 const ClientStateBuilder = require('./state/ClientStateBuilder');
 const MatchManager       = require('./modules/MatchManager');
-const { CLIENT_EVENTS, SERVER_EVENTS } = require('@duel-engine/shared');
+const CLIENT_EVENTS = { CREATE_ROOM:'create_room', JOIN_ROOM:'join_room', SET_READY:'set_ready', START_MATCH:'start_match', ROLL_INITIATIVE:'roll_initiative', ATTACK:'attack', DEFEND:'defend', USE_ABILITY:'use_ability', FINISH_ROUND:'finish_round', MANUAL_ACTION:'manual_action', EXPORT_LOG:'export_log' };
+const SERVER_EVENTS = { ROOM_CREATED:'room_created', ROOM_JOINED:'room_joined', STATE_UPDATE:'state_update', ERROR:'error', PLAYER_JOINED:'player_joined', PLAYER_DISCONNECTED:'player_disconnected', ALL_READY:'all_ready', EXPORT_DATA:'export_data' };
 
 // ─── Load preset(s) ──────────────────────────────────────────────────────────
 // Stage 1: one preset loaded at startup. Stage 2+: loaded from database per room.

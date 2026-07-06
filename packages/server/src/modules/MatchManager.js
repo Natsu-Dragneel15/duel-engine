@@ -17,7 +17,7 @@ const StatsTracker        = require('./StatsTracker');
 const TimerEngine         = require('./TimerEngine');
 const TurnManager         = require('./TurnManager');
 const { resetPlayerForRound } = require('../state/PlayerFactory');
-const { LOG_TYPES }       = require('@duel-engine/shared');
+const LOG_TYPES = { MATCH_START:'match_start', ROUND_START:'round_start', ROUND_OVER:'round_over', GAME_OVER:'game_over', INITIATIVE:'initiative', INITIATIVE_TIE:'initiative_tie', INITIATIVE_RESULT:'initiative_result', ATTACK_ROLL:'attack_roll', DEFENSE_ROLL:'defense_roll', HIT:'hit', MISS:'miss', ABILITY_USE:'ability_use', ABILITY_SUCCESS:'ability_success', ABILITY_FAIL:'ability_fail', STATUS_CHANGE:'status_change', MANUAL_ACTION:'manual_action', DOT_DAMAGE:'dot_damage', PROTECTION_CHANGE:'protection_change', MB_TRIGGERED:'mb_triggered' };
 
 class MatchManager {
   constructor(room, ruleEngine) {
