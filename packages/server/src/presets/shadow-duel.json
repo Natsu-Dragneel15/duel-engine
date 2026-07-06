@@ -1,0 +1,223 @@
+{
+  "meta": {
+    "name": "Shadow Duel",
+    "version": "1.0",
+    "description": "A psychological duel of dominance and submission. Two players clash through dice, wit, and special abilities.",
+    "author": "official",
+    "players": 2,
+    "roles": ["attacker", "defender"]
+  },
+
+  "match": {
+    "formats": ["best_of_1", "best_of_3", "best_of_5", "best_of_7", "custom"],
+    "defaultFormat": "best_of_1",
+    "tieBreaker": "attacker_wins"
+  },
+
+  "players": {
+    "startingHp": 100,
+    "maxHp": 100,
+    "hpMin": 0
+  },
+
+  "dice": {
+    "faces": [4, 6, 8, 10, 12, 20],
+    "defaultFaces": 6,
+    "customAllowed": false
+  },
+
+  "combat": {
+    "damage": 25,
+    "attackCooldownSeconds": 120,
+    "initiative": {
+      "method": "dice_roll",
+      "tieRule": "reroll"
+    },
+    "tieRule": "attacker_wins"
+  },
+
+  "protection": {
+    "enabled": true,
+    "configurable": true,
+    "breakable": true,
+    "breakMethod": "bc_ability"
+  },
+
+  "statuses": {
+    "progression": "hp_threshold",
+    "list": [
+      {
+        "id": "N",
+        "label": "N",
+        "tooltip": "Normal — starting status with Protection ON",
+        "protectionOn": true
+      },
+      {
+        "id": "R",
+        "label": "R",
+        "tooltip": "Restricted — starting status with Protection OFF. Both players take 5 HP every 5 minutes.",
+        "protectionOff": true
+      },
+      {
+        "id": "A",
+        "label": "A",
+        "tooltip": "Aroused — HP dropped to 75% or below.",
+        "hpThreshold": 0.75
+      },
+      {
+        "id": "H",
+        "label": "H",
+        "tooltip": "Heated — HP dropped to 50% or below.",
+        "hpThreshold": 0.50
+      },
+      {
+        "id": "AD",
+        "label": "AD",
+        "tooltip": "Advanced — HP dropped to 25% or below. All dice rolls suffer a -1 penalty.",
+        "hpThreshold": 0.25,
+        "dicePenalty": -1
+      },
+      {
+        "id": "MB",
+        "label": "MB",
+        "tooltip": "Defeated — HP reached 0.",
+        "hpThreshold": 0,
+        "defeated": true
+      }
+    ]
+  },
+
+  "dotSystems": [
+    {
+      "id": "protection_drain",
+      "label": "Protection Drain",
+      "trigger": "protection_off_at_start",
+      "targets": "both",
+      "damagePerTick": 5,
+      "intervalMinutes": 5,
+      "message": "🔴 Protection OFF: {target} lost {damage} HP"
+    },
+    {
+      "id": "bc_curse",
+      "label": "BC Curse",
+      "trigger": "bc_ability_success",
+      "targets": "defender",
+      "immediateHit": 10,
+      "damagePerTick": 10,
+      "intervalMinutes": 5,
+      "message": "⛓️ BC Curse: {target} lost {damage} HP"
+    }
+  ],
+
+  "abilities": [
+    {
+      "id": "HYPNO",
+      "label": "HYPNO",
+      "icon": "🌀",
+      "description": "Hypnotize the Defender. On a roll of 6, the Defender skips their next 2 defense rolls.",
+      "availableTo": ["attacker"],
+      "usesPerMatch": 1,
+      "requiresRoll": true,
+      "successCondition": { "type": "exact", "value": 6 },
+      "effect": {
+        "type": "skip_defenses",
+        "count": 2,
+        "targets": "defender"
+      }
+    },
+    {
+      "id": "BC",
+      "label": "BC Curse",
+      "icon": "⛓️",
+      "description": "Break the Defender's Protection. Requires a roll of 1. Deals immediate damage and starts a damage-over-time curse.",
+      "availableTo": ["attacker"],
+      "usesPerMatch": 1,
+      "requiresRoll": true,
+      "successCondition": { "type": "exact", "value": 1 },
+      "prerequisite": { "defenderProtection": true },
+      "effect": {
+        "type": "break_protection_and_dot",
+        "dotId": "bc_curse"
+      }
+    },
+    {
+      "id": "WEAKNESS",
+      "label": "Weakness Found",
+      "icon": "🎯",
+      "description": "The Defender acknowledges a discovered weakness. They immediately lose 10 HP.",
+      "availableTo": ["defender"],
+      "usesPerMatch": 1,
+      "requiresRoll": false,
+      "effect": {
+        "type": "instant_self_damage",
+        "damage": 10
+      }
+    },
+    {
+      "id": "P",
+      "label": "P Attempt",
+      "icon": "✨",
+      "description": "A rare post-challenge outcome. After the Attacker wins the challenge, if the Defender's Protection is OFF, roll for P. Succeeds only on exactly 3.",
+      "availableTo": ["attacker"],
+      "usesPerMatch": 1,
+      "requiresRoll": true,
+      "successCondition": { "type": "exact", "value": 3 },
+      "availability": {
+        "phase": "ended",
+        "challengeWinner": "attacker",
+        "defenderStatus": "MB",
+        "defenderProtection": false
+      },
+      "effect": {
+        "type": "apply_special_status",
+        "status": "P",
+        "targets": "defender"
+      }
+    }
+  ],
+
+  "manualControls": {
+    "availableTo": ["defender"],
+    "actions": [
+      {
+        "id": "set_status",
+        "label": "Set Status",
+        "description": "Manually override a player's status",
+        "targets": "any"
+      },
+      {
+        "id": "restore_protection",
+        "label": "Restore Shield",
+        "description": "Re-enable protection for a player",
+        "targets": "any"
+      },
+      {
+        "id": "word_teasing",
+        "label": "Word Teasing",
+        "description": "Successful word teasing — set target to status A",
+        "setsStatus": "A",
+        "targets": "attacker"
+      },
+      {
+        "id": "roomplay_corruption",
+        "label": "Roomplay Corruption",
+        "description": "Roomplay corruption — set target to status H",
+        "setsStatus": "H",
+        "targets": "attacker"
+      }
+    ]
+  },
+
+  "ui": {
+    "theme": "dark_fantasy",
+    "colors": {
+      "primary": "#c0392b",
+      "secondary": "#7c3aed",
+      "accent": "#c9a227"
+    },
+    "dice3d": true,
+    "floatingDamage": true,
+    "particleEffects": true,
+    "sounds": false
+  }
+}
