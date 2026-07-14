@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import useSocket from './hooks/useSocket';
 import useGameStore from './store/gameStore';
 import Toast from './components/Toast';
@@ -6,10 +6,13 @@ import LandingScreen from './screens/LandingScreen';
 import CreateScreen  from './screens/CreateScreen';
 import JoinScreen    from './screens/JoinScreen';
 import LobbyScreen   from './screens/LobbyScreen';
+import BuilderScreen     from './screens/BuilderScreen';
+import CreateCustomScreen from './screens/CreateCustomScreen';
 import BattleScreen  from './screens/BattleScreen';
 
 export default function App() {
   const [screen, setScreen] = useState('landing');
+  const [customPreset, setCustomPreset] = React.useState(null);
   const socket    = useSocket();
   const gameState = useGameStore(s => s.gameState);
   const roomCode  = useGameStore(s => s.roomCode);
@@ -29,12 +32,15 @@ export default function App() {
       {screen === 'landing' && (
         <LandingScreen
           onCreate={() => setScreen('create')}
-          onJoin={()   => setScreen('join')} />
+          onJoin={()   => setScreen('join')}
+          onBuild={() => setScreen('builder')} />
       )}
       {screen === 'create'  && <CreateScreen  onBack={() => setScreen('landing')} />}
       {screen === 'join'    && <JoinScreen    onBack={() => setScreen('landing')} />}
       {screen === 'lobby'   && <LobbyScreen />}
       {screen === 'battle'  && <BattleScreen />}
+      {screen === 'builder' && <BuilderScreen onBack={() => setScreen('landing')} onPlay={(p) => { setCustomPreset(p); setScreen('create-custom'); }} />}
+      {screen === 'create-custom' && <CreateCustomScreen preset={customPreset} onBack={() => setScreen('builder')} />}
       <Toast />
     </>
   );

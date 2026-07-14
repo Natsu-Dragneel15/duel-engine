@@ -2,19 +2,21 @@ import { useState } from 'react';
 import socket from '../socket/client';
 
 export default function CreateScreen({ onBack }) {
-  const [name, setName]           = useState('');
-  const [bestOf, setBestOf]       = useState(1);
+  const [name, setName]             = useState('');
+  const [bestOf, setBestOf]         = useState(1);
   const [protection, setProtection] = useState(true);
-  const [cooldown, setCooldown]   = useState(10);
-  const [prize, setPrize]         = useState('');
-  const [hp, setHp]               = useState(100);
-  const [damage, setDamage]       = useState(25);
+  const [cooldown, setCooldown]     = useState(10);
+  const [prize, setPrize]           = useState('');
+  const [hp, setHp]                 = useState(100);
+  const [damage, setDamage]         = useState(25);
+  const [role, setRole]             = useState('defender');
 
   const create = () => {
     if (!name.trim()) return alert('Enter your name');
     socket.emit('create_room', {
       presetId: 'shadow-duel',
       playerName: name.trim(),
+      creatorRole: role,
       settings: {
         bestOf:            parseInt(bestOf),
         protectionEnabled: protection,
@@ -39,6 +41,26 @@ export default function CreateScreen({ onBack }) {
             <label className="block text-xs tracking-widest text-[#9a9680] mb-1">YOUR NAME</label>
             <input className={inp} placeholder="Enter your name" maxLength={20}
               value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && create()} />
+          </div>
+
+          <div>
+            <label className="block text-xs tracking-widest text-[#9a9680] mb-2">YOUR ROLE</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => setRole('defender')}
+                className="py-2 rounded text-xs font-mono border transition-all"
+                style={role === 'defender'
+                  ? { border: '1px solid #38bdf8', color: '#38bdf8', background: 'rgba(56,189,248,0.1)' }
+                  : { border: '1px solid #2a2a3a', color: '#5a5650' }}>
+                🛡 Defender (Owner)
+              </button>
+              <button onClick={() => setRole('attacker')}
+                className="py-2 rounded text-xs font-mono border transition-all"
+                style={role === 'attacker'
+                  ? { border: '1px solid #ef4444', color: '#ef4444', background: 'rgba(239,68,68,0.1)' }
+                  : { border: '1px solid #2a2a3a', color: '#5a5650' }}>
+                ⚔️ Attacker
+              </button>
+            </div>
           </div>
 
           <div>
@@ -77,9 +99,10 @@ export default function CreateScreen({ onBack }) {
           <div className="flex items-center gap-3">
             <label className="text-xs tracking-widest text-[#9a9680]">PROTECTION</label>
             <button onClick={() => setProtection(p => !p)}
-              className={`px-4 py-1 rounded text-xs font-mono border transition-all ${
-                protection ? 'border-sky-400 text-sky-400 bg-sky-400/10' : 'border-[#2a2a3a] text-[#5a5650]'
-              }`}>
+              className="px-4 py-1 rounded text-xs font-mono border transition-all"
+              style={protection
+                ? { border: '1px solid #38bdf8', color: '#38bdf8', background: 'rgba(56,189,248,0.1)' }
+                : { border: '1px solid #2a2a3a', color: '#5a5650' }}>
               {protection ? '🛡 ON → Status N' : '❌ OFF → Status R'}
             </button>
           </div>

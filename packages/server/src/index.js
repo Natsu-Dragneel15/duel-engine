@@ -98,11 +98,12 @@ io.on('connection', (socket) => {
   console.log(`[+] ${socket.id}`);
 
   // ── Create Room ─────────────────────────────────────────────────────────────
-  socket.on(CLIENT_EVENTS.CREATE_ROOM, ({ presetId = 'shadow-duel', playerName, settings = {} }) => {
+  socket.on(CLIENT_EVENTS.CREATE_ROOM, ({ presetId = 'shadow-duel', playerName, settings = {}, customPreset = null, creatorRole = 'defender' }) => {
     if (!playerName?.trim()) return emitError(socket, 'Name required');
     const name   = playerName.trim().slice(0, 20);
-    const preset = PRESETS[presetId];
+    const preset = customPreset || PRESETS[presetId];
     if (!preset) return emitError(socket, 'Unknown preset');
+    if (!preset.meta || !preset.players || !preset.combat) return emitError(socket, 'Invalid preset config');
 
     const rules = new RuleEngine(preset);
     const room  = RoomStore.create(preset, {
@@ -115,8 +116,9 @@ io.on('connection', (socket) => {
       prize:             (settings.prize || '').slice(0, 100)
     });
 
-    // Defender creates the room — defender is the room owner
-    room.players[socket.id] = createPlayer(name, 'defender', rules, room.settings);
+    // Creator role is chosen by the host
+    const assignedRole = ['defender','attacker'].includes(creatorRole) ? creatorRole : 'defender';
+    room.players[socket.id] = createPlayer(name, assignedRole, rules, room.settings);
     room.playerOrder.push(socket.id);
     room.ownerId = socket.id;
 
@@ -124,7 +126,7 @@ io.on('connection', (socket) => {
     roomBuilders.set(room.code, new ClientStateBuilder(rules));
 
     socket.join(room.code);
-    socket.emit(SERVER_EVENTS.ROOM_CREATED, { code: room.code, role: 'defender', playerId: socket.id });
+    socket.emit(SERVER_EVENTS.ROOM_CREATED, { code: room.code, role: assignedRole, playerId: socket.id });
     console.log(`[Room] Created ${room.code} by ${name}`);
     broadcastState(room.code);
   });
@@ -164,11 +166,14 @@ io.on('connection', (socket) => {
     if (room.phase !== 'lobby') return emitError(socket, 'Match already started');
 
     const rules = getEngine(code);
-    room.players[socket.id] = createPlayer(name, 'attacker', rules, room.settings);
+    // Joiner gets the opposite role of the creator
+    const creatorPlayer = room.players[room.ownerId];
+    const joinerRole = creatorPlayer?.role === 'defender' ? 'attacker' : 'defender';
+    room.players[socket.id] = createPlayer(name, joinerRole, rules, room.settings);
     room.playerOrder.push(socket.id);
 
     socket.join(code);
-    socket.emit(SERVER_EVENTS.ROOM_JOINED, { code, role: 'attacker', playerId: socket.id });
+    socket.emit(SERVER_EVENTS.ROOM_JOINED, { code, role: joinerRole, playerId: socket.id });
     io.to(code).emit(SERVER_EVENTS.PLAYER_JOINED, { name });
     broadcastState(code);
     console.log(`[Room] ${name} joined ${code}`);

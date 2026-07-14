@@ -1,4 +1,4 @@
-export default function LandingScreen({ onCreate, onJoin }) {
+export default function LandingScreen({ onCreate, onJoin, onBuild }) {
   return (
     <div className="screen flex flex-col items-center justify-center p-6 text-center"
          style={{ background: 'radial-gradient(ellipse at center, #1a0a2e 0%, #0a0a0f 60%)' }}>
@@ -15,6 +15,11 @@ export default function LandingScreen({ onCreate, onJoin }) {
           className="px-8 py-3 rounded font-mono tracking-wider text-white transition-all hover:-translate-y-0.5"
           style={{ background: 'linear-gradient(135deg,#8b1a1a,#c0392b)', boxShadow: '0 0 20px #c0392b66' }}>
           🏰 CREATE MATCH
+        </button>
+        <button onClick={onBuild}
+          className='px-8 py-3 rounded font-mono tracking-wider transition-all hover:-translate-y-0.5'
+          style={{ border: '1px solid #7c3aed', color: '#a855f7', background: 'rgba(124,58,237,0.1)' }}>
+          🔧 BUILD A GAME
         </button>
         <button onClick={onJoin}
           className="px-8 py-3 rounded font-mono tracking-wider transition-all hover:-translate-y-0.5"
